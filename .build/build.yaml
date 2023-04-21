@@ -1,0 +1,66 @@
+apiVersion: builds.katanomi.dev/v1alpha1
+kind: Build
+spec:
+  workspaces:
+    - description: >
+        This workspace is shared among all the pipeline tasks to read/write
+        common resources
+      name: source
+  tasks:
+    - name: build
+      timeout: 30m
+      retries: 0
+      taskRef:
+        kind: ClusterTask
+        name: maven
+      workspaces:
+        - name: source
+          workspace: source
+      when: []
+      params:
+        - name: command
+          value: >-
+            ./gradlew clean build -Pversion=1.8.4
+
+            ls -al ./build/libs
+
+            /katanomi/bin/ktn-settings get username --server=build-nexus.alauda.cn --scope=repository/alauda-maven/ 
+    - name: upload-jar
+      runAfter:
+        - build
+      timeout: 30m
+      retries: 0
+      taskRef:
+        kind: ClusterTask
+        name: upload-files
+      workspaces:
+        - name: source
+          workspace: source
+      when: []
+      params:
+        - name: artifacts-path
+          value:
+            - ./build/libs/*
+        - name: artifact-repository
+          value: https://build-nexus.alauda.cn/repository/alauda/
+        - name: target-path
+          value: /sonarqube-community-branch-plugin/1.8.4/
+        - name: upload-pack
+          value: "false"
+        - name: checksum
+          value: "false"
+  git:
+    options:
+      depth: 1
+      timeout: 10m
+      retries: 0
+      resources:
+        limits:
+          cpu: 200m
+          memory: 200Mi
+        requests:
+          cpu: 200m
+          memory: 200Mi
+  runTemplate:
+    spec:
+      taskRunSpecs: []
