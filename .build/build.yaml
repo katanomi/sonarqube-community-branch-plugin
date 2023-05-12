@@ -25,6 +25,10 @@ spec:
             ls -al ./build/libs
 
             /katanomi/bin/ktn-settings get username --server=build-nexus.alauda.cn --scope=repository/alauda-maven/ 
+        - name: test-type
+          value: JUnit
+        - name: coverage-type
+          value: JaCoCo
     - name: upload-jar
       runAfter:
         - build
