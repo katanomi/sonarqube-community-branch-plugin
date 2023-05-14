@@ -18,8 +18,6 @@ spec:
           workspace: source
       when: []
       params:
-        - name: tool-image
-          value: registry.alauda.cn:60080/devops/builder-java:17.0.6-openjdk-30dc2aac
         - name: command
           value: ./gradlew clean build -Pversion=1.8.4
     - name: upload-jar
